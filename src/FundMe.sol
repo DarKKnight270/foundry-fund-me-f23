@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // 1. Pragma
-pragma solidity 0.8.19;
+pragma solidity ^0.8.19;
 // 2. Imports
 
 import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
@@ -61,26 +61,39 @@ contract FundMe {
         s_funders.push(msg.sender);
     }
 
-   function withdraw() public onlyOwner {
-    for (uint256 funderIndex = 0; funderIndex < s_funders.length; funderIndex++) {
-        address funder = s_funders[funderIndex];
-        s_addressToAmountFunded[funder] = 0;
+    function withdraw() public onlyOwner {
+        for (
+            uint256 funderIndex = 0;
+            funderIndex < s_funders.length;
+            funderIndex++
+        ) {
+            address funder = s_funders[funderIndex];
+            s_addressToAmountFunded[funder] = 0;
+        }
+        s_funders = new address[](0);
+
+        // Ensure the call has enough gas and handle reentrancy
+        (bool success, ) = i_owner.call{
+            value: address(this).balance,
+            gas: 2300
+        }("");
+        require(success, "Call failed");
     }
-    s_funders = new address[](0);
-    (bool success,) = i_owner.call{value: address(this).balance}("");
-    require(success, "Call failed");
-}
 
     function cheaperWithdraw() public onlyOwner {
-    address[] memory funders = s_funders;
-    for (uint256 funderIndex = 0; funderIndex < funders.length; funderIndex++) {
-        address funder = funders[funderIndex];
-        s_addressToAmountFunded[funder] = 0;
+        address[] memory funders = s_funders;
+        for (
+            uint256 funderIndex = 0;
+            funderIndex < funders.length;
+            funderIndex++
+        ) {
+            address funder = funders[funderIndex];
+            s_addressToAmountFunded[funder] = 0;
+        }
+        s_funders = new address[](0);
+        (bool success, ) = i_owner.call{value: address(this).balance}("");
+        require(success, "Call failed");
     }
-    s_funders = new address[](0);
-    (bool success,) = i_owner.call{value: address(this).balance}("");
-    require(success, "Call failed");
-}
 
     /**
      * Getter Functions
