@@ -16,7 +16,6 @@ error FundMe__NotOwner();
  * @dev This implements price feeds as our library
  */
 contract FundMe {
-    // Type Declarations
     using PriceConverter for uint256;
 
     // State variables
@@ -91,7 +90,7 @@ contract FundMe {
             s_addressToAmountFunded[funder] = 0;
         }
         s_funders = new address[](0);
-        (bool success, ) = i_owner.transfer(address(this).balance);
+        (bool success, ) = i_owner.call{value: address(this).balance}("");
         require(success, "Call failed");
     }
 
