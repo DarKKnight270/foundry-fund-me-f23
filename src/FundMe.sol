@@ -91,7 +91,7 @@ contract FundMe {
             s_addressToAmountFunded[funder] = 0;
         }
         s_funders = new address[](0);
-        (bool success, ) = i_owner.call{value: address(this).balance}("");
+        (bool success, ) = i_owner.transfer(address(this).balance);
         require(success, "Call failed");
     }
 
